@@ -1,0 +1,1 @@
+"""Lending policy RAG assistant."""
