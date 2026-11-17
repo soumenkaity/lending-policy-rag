@@ -1,7 +1,7 @@
 """Evaluate retrieval and answers against a labelled question set.
 
     uv run python evals/run_eval.py              # retrieval ablation + answer quality
-    uv run python evals/run_eval.py --skip-llm   # retrieval only (fast)
+    uv run python evals/run_eval.py --skip-llm   # retrieval only, no chat model calls (fast)
 
 Metrics
   Retrieval (answerable questions): hit@k = expected document in the top-k chunks; MRR = mean 1/rank.
@@ -45,7 +45,8 @@ def main() -> int:
 
     # 1. Retrieval ablation, scored against the exact policy section that answers each question
     lines += ["## Retrieval\n", f"| Mode | Section hit@{k} | Section MRR | Document hit@{k} | Missed |", "|---|---|---|---|---|"]
-    for mode in ("bm25", "vector", "hybrid", "hybrid+rewrite"):
+    modes = ("bm25", "vector", "hybrid") if args.skip_llm else ("bm25", "vector", "hybrid", "hybrid+rewrite")
+    for mode in modes:
         chunk_rrs, doc_hits, missed = [], 0, []
         for q in answerable:
             found = retriever.search(q["question"], k, mode=mode)
